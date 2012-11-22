@@ -5,7 +5,7 @@ from PyQt4 import uic
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-
+import OpenGL.GLU as glu
 from shader import ShaderProgram,ShaderCode
 
 class Canvas(QGLWidget):
@@ -32,13 +32,15 @@ class Canvas(QGLWidget):
             self.setWindowTitle(imgPath)
 
     def mousePressEvent(self, event):
-        print('press')
+        #print('press')
+        self.paintGL()
 
     def mouseReleaseEvent(self, event):
         print('release')
 
     def mouseMoveEvent(self, event):
-        print('move')
+        #print('move')
+        self.paintGL()
 
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT)
@@ -49,11 +51,33 @@ class Canvas(QGLWidget):
 
         # if stroke, draw to the stroke layer, draw stroke layer
         self.program.bind()
-        glBegin(GL_QUADS)
+        glBegin(GL_LINE_STRIP)
+        g=gluNewNurbsRenderer()
+        x1 = y1 = 25
+        x2 = y2 = 450
+        scale = abs(x2-x1)/3.0
+        midx, midy = (abs(x2+x1)/2.0), abs(y2+y1)/2.0   
+        degree = 3
+
+            
+        ctrlpoints=[[x1, y1, 0],
+            [x1+scale, y1, 0],
+            [midx, midy, 0],
+            [x2-scale, y2, 0],
+            [x2, y2, 0]]   
+        
+        glu.gluBeginCurve(g)
+        glu.gluNurbsCurve(g,
+                          [[10,10,0],[50,30,0],[100,100,0],[110,220,0],[400,280,0]],
+                          [[0,0,0.1,0.1],[0,0,0.1,0.1],[0,0,0.1,0.1],[0,0,0.1,0.1],[0,0,0.1,0.1],[0,0,0.1,0.1],[0,0,0.1,0.1],[0,0,0.1,0.1],],
+                          GL_MAP1_VERTEX_3)
+        glu.gluEndCurve(g)
+        
         glVertex2f(10,10)
         glVertex2f(20,10)
-        glVertex2f(20,20)
-        glVertex2f(10,20)
+        glVertex2f(10,200)
+        glVertex2f(100,200)
+        
         glEnd()
         self.program.release()
         
